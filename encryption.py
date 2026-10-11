@@ -2,7 +2,7 @@
 CryptoVault Pro — Advanced Security Toolkit (Responsive)
 ==========================================================
 Install: pip install streamlit cryptography
-Run:     streamlit run app.py
+Run:     streamlit run encryption.py
 
 Features:
   • AES‑256‑GCM text & file encryption (password‑based)
@@ -26,6 +26,7 @@ import hashlib
 import hmac as hmac_module
 import secrets
 import uuid
+from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes, serialization
@@ -256,7 +257,10 @@ def decrypt_text(payload: str, password: str) -> str:
     ciphertext = combined[SALT_LEN+NONCE_LEN:]
     key = derive_key(salt, password)
     aesgcm = AESGCM(key)
-    return aesgcm.decrypt(nonce, ciphertext, None).decode("utf-8")
+    try:
+        return aesgcm.decrypt(nonce, ciphertext, None).decode("utf-8")
+    except InvalidTag:
+        raise ValueError("Wrong password or corrupted data.")
 
 def encrypt_file_bytes(data: bytes, password: str) -> bytes:
     salt = os.urandom(SALT_LEN)
@@ -273,7 +277,10 @@ def decrypt_file_bytes(data: bytes, password: str) -> bytes:
     ciphertext = data[SALT_LEN+NONCE_LEN:]
     key = derive_key(salt, password)
     aesgcm = AESGCM(key)
-    return aesgcm.decrypt(nonce, ciphertext, None)
+    try:
+        return aesgcm.decrypt(nonce, ciphertext, None)
+    except InvalidTag:
+        raise ValueError("Wrong password or corrupted data.")
 
 def hash_data(data: bytes, algo: str) -> str:
     h = hashlib.new(algo)

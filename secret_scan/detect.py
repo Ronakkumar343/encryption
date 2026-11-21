@@ -45,6 +45,11 @@ class Finding:
     line: int
     column: int  # 1-based column where the matched value starts
     matched: str
+    # Heuristic confidence (0..1) that the match is a real secret.
+    # Pattern rules are high-confidence formats, so they default to 1.0;
+    # the entropy detector sets this from the token's entropy and length.
+    # It is a ranking signal, never a probability.
+    confidence: float = 1.0
 
     @property
     def redacted(self) -> str:

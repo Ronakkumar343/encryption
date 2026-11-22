@@ -15,11 +15,18 @@ Steps built so far:
   over long unlabelled tokens, with a heuristic confidence score —
   threshold 4.2 bits/character, measured 0 false positives on the
   fixture set and 149/200 secrets caught (hex-only secrets are the
-  known gap: they cap at 4.0 bits/character).
+  known gap: they cap at 4.0 bits/character),
+* (d) the reporters (:mod:`secret_scan.report`): a human-readable text
+  report and a ``--json`` document for CI, both redacted, with a
+  non-zero exit code when findings exist.
 
-It uses only the standard library. The formatted reporters land in a
-later step.
+It uses only the standard library.
 """
+
+# The version lives at the top of this module (before the imports
+# below) because :mod:`secret_scan.report` reads it from the package
+# while the package is still initialising.
+__version__ = "0.4.0"
 
 from .allowlist import Allowlist, AllowlistEntry
 from .detect import Finding, RULE_DESCRIPTIONS, RULES, scan_line, scan_text
@@ -32,6 +39,7 @@ from .entropy import (
     token_confidence,
 )
 from .gitignore import Gitignore, IgnoreRules
+from .report import format_json, format_text, report_to_dict
 from .scan import ScanResult, is_binary, scan_file, scan_path
 
 __all__ = [
@@ -45,7 +53,10 @@ __all__ = [
     "RULE_DESCRIPTIONS",
     "RULES",
     "ScanResult",
+    "format_json",
+    "format_text",
     "is_binary",
+    "report_to_dict",
     "scan_file",
     "scan_line",
     "scan_line_entropy",
@@ -55,5 +66,3 @@ __all__ = [
     "shannon_entropy",
     "token_confidence",
 ]
-
-__version__ = "0.3.0"

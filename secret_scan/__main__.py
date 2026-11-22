@@ -1,13 +1,13 @@
 """Command-line interface: ``python -m secret_scan <path>``.
 
-Scans one file or a whole directory tree and prints one line per
-finding — ``path:line:column: rule-id redacted-value`` — so a full
-secret never reaches the terminal. Exit code 0 means no findings,
-1 means findings were found, 2 means the invocation was wrong
-(missing path, or a path that does not exist).
+Scans one file or a directory tree and prints a human-readable report
+(see :mod:`secret_scan.report`) — findings grouped by file, with
+redacted values only, so a full secret never reaches the terminal.
+``--json`` prints the same result as a JSON document instead, for CI
+pipelines that parse the output.
 
-A formatted text report and ``--json`` output land in a later step;
-this CLI prints the same facts in the simplest usable form.
+Exit code 0 means no findings, 1 means findings were found, 2 means
+the invocation was wrong (missing path, or a path that does not exist).
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ import sys
 from pathlib import Path
 
 from .allowlist import Allowlist, DEFAULT_FILENAME
+from .report import format_json, format_text
 from .scan import scan_path
 
 __all__ = ["main"]
@@ -30,6 +31,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "path",
         help="file or directory to scan",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="print the report as a JSON document (for CI) instead of text",
     )
     parser.add_argument(
         "--allowlist",
@@ -66,21 +72,10 @@ def main(argv: list[str] | None = None) -> int:
         use_gitignore=not args.no_gitignore,
     )
 
-    for finding in result.findings:
-        print(
-            f"{finding.file}:{finding.line}:{finding.column}: "
-            f"{finding.rule} {finding.redacted}"
-        )
-    skipped = (
-        f", {len(result.files_skipped)} file(s) skipped"
-        if result.files_skipped
-        else ""
-    )
-    print(
-        f"scanned {result.files_scanned} file(s), "
-        f"{len(result.findings)} finding(s){skipped}",
-        file=sys.stderr,
-    )
+    if args.json:
+        print(format_json(result, target))
+    else:
+        print(format_text(result, target), end="")
     return 1 if result.findings else 0
 
 

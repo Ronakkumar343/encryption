@@ -290,7 +290,8 @@ class CliTests(unittest.TestCase):
             _write(root, "config.py", f'aws_key = "{AWS_KEY}"\n')
             proc = self._run_cli(str(root))
             self.assertEqual(proc.returncode, 1)
-            self.assertIn("config.py:1:", proc.stdout)
+            self.assertIn("config.py", proc.stdout)
+            self.assertIn("1:12", proc.stdout)
             self.assertIn("aws-access-key", proc.stdout)
             self.assertIn("AKIA...MPLE", proc.stdout)
             self.assertNotIn(AWS_KEY, proc.stdout)
@@ -301,7 +302,8 @@ class CliTests(unittest.TestCase):
             _write(root, "app.py", "print('hello')\n")
             proc = self._run_cli(str(root))
             self.assertEqual(proc.returncode, 0)
-            self.assertEqual(proc.stdout, "")
+            self.assertIn("No findings.", proc.stdout)
+            self.assertIn("Result: OK", proc.stdout)
 
     def test_cli_missing_path_exits_2(self):
         proc = self._run_cli("/definitely/not/a/real/path")
@@ -324,7 +326,8 @@ class CliTests(unittest.TestCase):
             )
             proc = self._run_cli(str(root), "--allowlist", str(allow))
             self.assertEqual(proc.returncode, 0)
-            self.assertEqual(proc.stdout, "")
+            self.assertIn("No findings.", proc.stdout)
+            self.assertIn("Result: OK", proc.stdout)
 
 
 if __name__ == "__main__":

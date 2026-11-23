@@ -45,6 +45,29 @@ encryption.py      — the entire app: crypto core + Streamlit UI (729 lines)
 requirements.txt   — Python dependencies
 ```
 
+## 🔍 Self-audit (23 November 2026)
+
+The repo's own scanner (`secret_scan` 0.4.0) was run over fresh clones of
+all six of Ronak's public repos. No real secret was found in any of them.
+
+| Repo (HEAD) | Files scanned | Findings | Result |
+|---|---|---|---|
+| encryption (`ed147de`) | 18 | 13 | All 13 are the scanner's own test fixtures (see below) |
+| weather-ai-predictor (`738a99c`) | 15 | 0 | Clean |
+| Chessmate (`ce6c84a`) | 7 | 0 | Clean |
+| yt-ai (`53726aa`) | 9 | 0 | Clean |
+| unit-conversion (`3a77589`) | 12 | 0 | Clean (`omniconvert-pro.zip` skipped — binary, not scanned) |
+| gesture-to-speech (`6e140f4`) | 19 | 0 | Clean |
+
+The 13 findings in `encryption` are all in `secret_scan`'s own test files
+(`tests/test_detect.py`, `tests/test_entropy.py`, `tests/test_report.py`,
+`tests/test_scan.py`) and all synthetic by construction: Amazon's documented
+example key (shown here redacted as `AKIA...MPLE`, exactly as the scanner
+prints it), bare private-key header strings with no
+key body, and hand-written test strings such as `correct-horse-battery-staple-99`.
+They stay in place because the tests need them; nothing was removed, and no
+real credential was found, so no fix was needed.
+
 ## 👤 Author
 
 Built by **Ronak Kumar** — student developer from Mithi, Pakistan, working toward Computer Science at MIT.
